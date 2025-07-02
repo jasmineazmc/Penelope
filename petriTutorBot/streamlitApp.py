@@ -13,6 +13,7 @@ if "page" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+#landing page code
 def show_landing():
     st.markdown(f"""
         <div style='background: linear-gradient(135deg, {NSU_GREEN} 30%, {NSU_YELLOW} 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 40px;'>
@@ -38,7 +39,7 @@ def show_landing():
     if st.button("Start Chatting", key="startchatbtn", help="Start Chatting", use_container_width=True):
         st.session_state.page = "chat"
         st.rerun()
-
+#chat code
 def show_chat():
     st.markdown(f"""
         <div style='width: 100%; text-align: center; margin-top: 18px; margin-bottom: 18px;'>
@@ -147,14 +148,14 @@ def show_chat():
             }}
         </style>
         <script>
-            // Auto-scroll to the bottom of the chat
+            # Auto-scroll to the bottom of the chat feature
             window.addEventListener('load', function() {{
                 var chatContainer = window.parent.document.querySelector('.block-container');
                 if (chatContainer) {{
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }}
             }});
-            // Also scroll on update
+            # Also scrolls on update
             const observer = new MutationObserver(function() {{
                 var chatContainer = window.parent.document.querySelector('.block-container');
                 if (chatContainer) {{
