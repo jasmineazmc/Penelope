@@ -1,10 +1,8 @@
 To use the Petri Net Tutor Bot...
-- In Terminal 
-1. open the folder named '_pycache_'
-2. open the file named responses.cpython-313
 
 - In Online UI
 1. open the petriTutorBot file in a python IDE
 2. open the terminal and get ready to type a new line.
 3. in the terminal, type or copy/paste stream run streamlitApp.py
 This should open to a web browser that will contain the chatbot
+
