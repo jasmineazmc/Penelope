@@ -6,14 +6,11 @@ import time
 NSU_GREEN ="#007A33"
 NSU_YELLOW = "#FFD100"
 
-
-
 if "page" not in st.session_state:
     st.session_state.page = "landing"
 if "history" not in st.session_state:
     st.session_state.history = []
 
-#landing page code
 def show_landing():
     st.markdown(f"""
         <div style='background: linear-gradient(135deg, {NSU_GREEN} 30%, {NSU_YELLOW} 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 40px;'>
@@ -39,7 +36,7 @@ def show_landing():
     if st.button("Start Chatting", key="startchatbtn", help="Start Chatting", use_container_width=True):
         st.session_state.page = "chat"
         st.rerun()
-#chat code
+
 def show_chat():
     st.markdown(f"""
         <div style='width: 100%; text-align: center; margin-top: 18px; margin-bottom: 18px;'>
@@ -65,7 +62,8 @@ def show_chat():
         </div>
         """
         thinking_placeholder.markdown(thinking_html, unsafe_allow_html=True)
-        response = getBotResponses(userInput)
+        # Pass the full history (including both user and bot turns) to getBotResponses
+        response = getBotResponses(userInput, history=st.session_state.history[:-1])
         time.sleep(0.5)
         thinking_placeholder.empty()
         st.session_state.history.append(("Penelope", response))
@@ -126,11 +124,18 @@ def show_chat():
     st.markdown(chat_bubble_css, unsafe_allow_html=True)
 
     chat_html = "<div class='chat-container'>"
+    import re
     for sender, message in st.session_state.history:
         if sender == "You":
             chat_html += f"<div class='bubble bubble-user'><div class='sender-label sender-user'>{sender}</div>{message}</div>"
         else:
-            chat_html += f"<div class='bubble bubble-bot'><div class='sender-label sender-bot'>{sender}</div>{message}</div>"
+            # Split message into smaller readable chunks 
+            blocks = [blk.strip() for blk in re.split(r'\n\n+', message) if blk.strip()]
+            if len(blocks) == 1:
+                blocks = re.split(r'(?<=[.!?]) +', message)
+            # Join blocks with for readability, all in one bubble
+            formatted_message = '<br><br>'.join(blocks)
+            chat_html += f"<div class='bubble bubble-bot'><div class='sender-label sender-bot'>{sender}</div>{formatted_message}</div>"
     chat_html += "</div>"
     st.markdown(chat_html, unsafe_allow_html=True)
 
@@ -148,14 +153,14 @@ def show_chat():
             }}
         </style>
         <script>
-            # Auto-scroll to the bottom of the chat feature
+            // Auto-scroll to the bottom of the chat
             window.addEventListener('load', function() {{
                 var chatContainer = window.parent.document.querySelector('.block-container');
                 if (chatContainer) {{
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }}
             }});
-            # Also scrolls on update
+            // Also scroll on update
             const observer = new MutationObserver(function() {{
                 var chatContainer = window.parent.document.querySelector('.block-container');
                 if (chatContainer) {{
@@ -165,6 +170,13 @@ def show_chat():
             observer.observe(window.parent.document.body, {{ childList: true, subtree: true }});
         </script>
     """, unsafe_allow_html=True)
+
+#Not working yet, but will be used to reset the conversation
+def reset_conversation():
+    st.session_state.conversation - None
+    st.session_state.history= None
+    st.button('Clear Conversation', on_click=reset_conversation(), key='clear_conversation', help="Clear the conversation history", use_container_width=True)
+
 
 # Main logic
 if st.session_state.page == "landing":
