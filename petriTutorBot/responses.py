@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 load_dotenv()
-
+import streamlit as st
 import openai
 import os
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 #PUT ASTERISKS AROUND KEY WORDS IN DEFINITIONS
 responses= """
@@ -64,7 +64,7 @@ def getBotResponses(userInput, history=None):
         for entry in history:
             if isinstance(entry, (list, tuple)) and len(entry) == 2:
                 sender, msg = entry
-                # Only add if msg is a string
+                # Only add if msg is a string (avoid accidental list nesting)
                 if isinstance(msg, str):
                     if sender.lower() == "you":
                         messages.append({"role": "user", "content": msg})
