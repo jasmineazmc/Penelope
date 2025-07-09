@@ -36,8 +36,8 @@ Finally, a Petri net is said to be Lk-live if every transition in the net is Lk-
 -*Precondition* is a condition that must be true before a transition can fire. It usually means tokens must be present in input places. 
 -When learning about Petri nets, first your should understand how tokens move through places and transitons. 
 -When a transition *fires*, it consumes tokens from its input places and produces tokens in its output places. This changes the marking of the Petri net. 
+-An important *rule* of Petri nets is that a transition cannot connect to another transition directly and a place cannot connect to another place directly. A transition must connect to a place and a place must connect to a transition.  
 """
-
 def getBotResponses(userInput, history=None):
     #responses like okay or no aren't understood by the bot, so this will handle that separately
     casualInputs = ["ok", "okay", "thanks", "cool", "thankyou", "nice", "great", "amazing", "wonderful", "fun", "nope", "no"]
@@ -48,21 +48,38 @@ def getBotResponses(userInput, history=None):
 
     # Build conversation history for context
     messages = []
-    messages.append({"role": "system", "content": "You are a smart, helpful tutor bot named Penelope that teaches students about Petri nets. Use the following definitions and information to answer naturally and clearly along with your own background knowledge. If the user asks about a previous question or quiz, use the conversation history to recall and answer as best as possible. If you don't know, say so politely.\n" + responses})
+    # Add system prompt
+    messages.append({
+        "role": "system",
+        "content": (
+            "You are a smart, helpful tutor bot named Penelope that only answers questions about Petri nets. "
+            "Keep your answers concise and to the point. Only elaborate or give detailed explanations if the user asks for more detail or examples. "
+            "If the user asks about anything else, politely direct them to ask about Petri nets. "
+            "Use the following definitions and information to answer, but do not overexplain. Be friendly and clear. If you don't know, say so politely.\n" + responses
+        )
+    })
 
-    # Add chat history if provided
+    # Add chat history if provided, had to be modified to because the base add chat history function wasn't working
     if history:
-        for sender, msg in history:
-            if sender == "You":
-                messages.append({"role": "user", "content": msg})
-            else:
-                messages.append({"role": "assistant", "content": msg})
+        for entry in history:
+            if isinstance(entry, (list, tuple)) and len(entry) == 2:
+                sender, msg = entry
+                # Only add if msg is a string
+                if isinstance(msg, str):
+                    if sender.lower() == "you":
+                        messages.append({"role": "user", "content": msg})
+                    else:
+                        messages.append({"role": "assistant", "content": msg})
+            elif isinstance(entry, dict) and "role" in entry and "content" in entry:
+                # Only add if content is a string
+                if isinstance(entry["content"], str):
+                    messages.append(entry)
 
     # Add the latest user input
     messages.append({"role": "user", "content": userInput})
 
     try:
-        # Try to get a complete response
+        # Try to get a complete response, handling long answers
         full_response = ""
         max_tokens = 200
         while True:
@@ -83,6 +100,8 @@ def getBotResponses(userInput, history=None):
         return full_response
     except Exception as e:
         return f"Sorry, I had an issue generating a response: {str(e)}"
+
+
     
 
 
@@ -90,6 +109,8 @@ def getBotResponses(userInput, history=None):
     #CONSIDER CREATING AN OPENING PAGE AND A PAGE THAT LEADS TO A NEW CHAT WHERE THE TITLE IS NOT AT THE TOP OF THE PAGE.     DONE BUT SILL HAVE TITLE ON TOP OF CHAT PAGE, MIGHT REMOVE LATER
     #POSSIBLY A CLEAR CHAT BUTTON
     #ORGANIZE THE FILES FOR BETTER SHARING
+    #CONTEXT IS NOT BEING USED, SO THE BOT DOES NOT REMEMBER PREVIOUS QUESTIONS OR ANSWERS.   FIXED
+    #CONSIDER ADDING AN AUDIO FEATURE TO READ THE RESPONSES OUT LOUD ON COMMAND
 
     #EXPAND TESTING: ASK OTHERS TO TEST THE BOT AND GIVE FEEDBACK
 
